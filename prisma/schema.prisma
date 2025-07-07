@@ -1,85 +1,86 @@
-  generator client {
-    provider = "prisma-client-js"
-  }
+generator client {
+  provider = "prisma-client-js"
+}
 
-  datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-  }
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
 
-  model Usuario {
-    id              Int          @id @default(autoincrement())
-    cpf             String       @unique @db.VarChar(14)
-    foto            String?      @db.VarChar(500)
-    email           String       @unique @db.VarChar(100)
-    data_nascimento DateTime?
-    nome            String       @db.VarChar(100)
-    senha           String       @db.VarChar(100)
-    professor       Professor?
-    estudante       Estudante?
-    jogos           JogoDaVelha[]
-    @@map("usuarios")
-  }
+model Usuario {
+  id              String        @id @default(auto()) @map("_id")
+  cpf             String        @unique
+  foto            String?
+  email           String        @unique
+  data_nascimento DateTime?
+  nome            String
+  senha           String
 
-  model Professor {
-    fk_usuarios_id Int     @id
-    siape          Int     @unique
-    usuario        Usuario @relation(fields: [fk_usuarios_id], references: [id])
-    disciplinas    Disciplina[]
+  professorId     String?       // armazena o id do Professor (se houver)
+  estudanteId     String?       // armazena o id do Estudante (se houver)
 
-    @@map("professores")
-  }
+  jogos           JogoDaVelha[]
 
-  model Estudante {
-    fk_usuarios_id Int     @id
-    ra             Int     @unique
-    usuario        Usuario @relation(fields: [fk_usuarios_id], references: [id])
-    matriculas     MatriculaSe[]
+  @@map("usuarios")
+}
 
-    @@map("estudantes")
-  }
+model Professor {
+  id              String     @id @default(auto()) @map("_id")
+  siape           Int        @unique
 
-  model Disciplina {
-    id                           Int     @id @default(autoincrement())
-    periodo                      Int?
-    turno                        String? @db.VarChar(14)
-    nome                         String  @db.VarChar(100)
-    qnt_total_aulas              Int?
-    carga_horaria                Float
-    curso                        String  @db.VarChar(100)
-    fk_professores_fk_usuarios_id Int
+  usuarioId       String     // armazena o id do Usuario
+  disciplinas     Disciplina[]
 
-    professor    Professor   @relation(fields: [fk_professores_fk_usuarios_id], references: [fk_usuarios_id])
-    matriculas   MatriculaSe[]
+  @@map("professores")
+}
 
-    @@map("disciplinas")
-  }
+model Estudante {
+  id              String     @id @default(auto()) @map("_id")
+  ra              Int        @unique
 
-  model JogoDaVelha {
-    id           Int      @id @default(autoincrement())
-    player1      String?  @db.VarChar(100)
-    player2      String?  @db.VarChar(100)
-    resultado    String?  @db.VarChar(100)
-    data_jogo    DateTime?
-    fk_usuarios_id Int
+  usuarioId       String     // armazena o id do Usuario
+  matriculas      MatriculaSe[]
 
-    usuario      Usuario  @relation(fields: [fk_usuarios_id], references: [id])
+  @@map("estudantes")
+}
 
-    @@map("jogo_da_velha")
-  }
+model Disciplina {
+  id                           String    @id @default(auto()) @map("_id")
+  periodo                      Int?
+  turno                        String?
+  nome                         String
+  qnt_total_aulas              Int?
+  carga_horaria                Float
+  curso                        String
 
-  model MatriculaSe {
-    fk_disciplinas_id            Int
-    fk_estudantes_fk_usuarios_id Int
-    n1                           Float?
-    n2                           Float?
-    media                        Float?
-    faltas                       Int?
-    situacao                     String? @db.VarChar(20)
+  professorId                  String?   // armazena o id do Professor
+  matriculas                   MatriculaSe[]
 
-    disciplina Disciplina @relation(fields: [fk_disciplinas_id], references: [id])
-    estudante  Estudante  @relation(fields: [fk_estudantes_fk_usuarios_id], references: [fk_usuarios_id])
+  @@map("disciplinas")
+}
 
-    @@map("matricula_se")
-    @@id([fk_disciplinas_id, fk_estudantes_fk_usuarios_id])
-  }
+model JogoDaVelha {
+  id              String     @id @default(auto()) @map("_id")
+  player1         String?
+  player2         String?
+  resultado       String?
+  data_jogo       DateTime?
+  usuarioId       String?    // armazena o id do Usuario
+
+  @@map("jogo_da_velha")
+}
+
+model MatriculaSe {
+  id                           String    @id @default(auto()) @map("_id")
+
+  disciplinaId                 String    // armazena o id da Disciplina
+  estudanteId                  String    // armazena o id do Estudante
+
+  n1                           Float?
+  n2                           Float?
+  media                        Float?
+  faltas                       Int?
+  situacao                     String?
+
+  @@map("matricula_se")
+}

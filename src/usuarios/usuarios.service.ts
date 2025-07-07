@@ -13,14 +13,18 @@ const prisma = new PrismaClient();
 export class UsuariosService {  
   constructor(private prisma: PrismaService) {}
 
+  // Esse método é necessário pois o Prisma não fornece automaticamente buscas por campos arbitrários
   async findByEmail(email: string) {
+    // Utiliza o método findFirst do Prisma para encontrar o primeiro usuário cujo email corresponde ao fornecido
     return await this.prisma.usuario.findFirst({
-      where: { email },
+      where: { email }, // Condição de busca: email igual ao fornecido
     });
   }
 
   async findAllSafe() {
+     // Busca todos os usuários no banco de dados
     const usuarios = await this.prisma.usuario.findMany();
+    // Para cada usuário encontrado, remove o campo 'senha' e retorna os demais dados
     return usuarios.map(({ senha, ...rest }) => rest);
   }
 
